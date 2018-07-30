@@ -44,7 +44,7 @@ int main(void)
 		}
 		
 		if (cntavail == 0x0F) {
-			cntavail = cntavail | 0x8F;
+			cntavail = cntavail | 0x80;
 		}
 		
 		// (3) Write output
