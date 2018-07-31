@@ -1,9 +1,11 @@
-/*
- * fli034_lab1_part2.c
- *
- * Created: 7/30/2018 2:15:38 PM
- * Author : ucrcse
- */ 
+/*	Partner(s) Name & E-mail: Jasmine Kwong jkwon045@ucr.edu
+ *	Lab Section: 21
+ *	Assignment: Lab 1  Exercise 2
+ *	Exercise Description: [optional - include for your own benefit]
+ *	
+ *	I acknowledge all content contained herein, excluding template or example
+ *	code, is my own original work.
+ */
 
 #include <avr/io.h>
 

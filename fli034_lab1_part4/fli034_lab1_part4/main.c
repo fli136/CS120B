@@ -1,9 +1,12 @@
-/*
- * fli034_lab1_part4.c
- *
- * Created: 7/30/2018 3:06:04 PM
- * Author : ucrcse
- */ 
+/*	Partner(s) Name & E-mail: Jasmine Kwong jkwon045@ucr.edu
+ *	Lab Section: 21
+ *	Assignment: Lab 1  Exercise 4
+ *	Exercise Description: [optional - include for your own benefit]
+ *	
+ *	I acknowledge all content contained herein, excluding template or example
+ *	code, is my own original work.
+ */
+
 
 #include <avr/io.h>
 
@@ -15,19 +18,19 @@ int main(void)
 	DDRC = 0x00; PORTC = 0xFF; // Configure port C's 8 pins as inputs
 	DDRD = 0xFF; PORTD = 0x00; // Configure port D's 8 pins as outputs
     /* Replace with your application code */
-	unsigned short tmp1 = 0;
-	short tmp2 = 0;
+	unsigned short weight = 0;
+	signed short balance  = 0;
 	unsigned char total = 0x00;
     while (1) 
     {
-		tmp1 = PINA + PINB + PINC;
-		tmp2 = PINA - PINC;
-		total = (PINA >> 2) + (PINB >> 2) + (PINC >> 2) >> 2 << 2;
-		if (tmp2 > 80 || tmp2 < -80) {
+		weight = PINA + PINB + PINC;
+		balance = PINA - PINC;
+		total = (PINA >> 2) + (PINB >> 2) + (PINC >> 2);
+		if (balance > 80 || balance < -80) {
 			total = (total & 0xFC) | 0x02;
 		}
 		
-		if (tmp1 > 140) {
+		if (weight > 140) {
 			total = (total & 0xFE) | 0x01;
 		}
 		
