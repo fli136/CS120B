@@ -22,7 +22,7 @@ int main(void)
     {
 		tmp1 = PINA + PINB + PINC;
 		tmp2 = PINA - PINC;
-		total = (PINA >> 2) + (PINB >> 2) + (PINC >> 2);
+		total = (PINA >> 2) + (PINB >> 2) + (PINC >> 2) >> 2 << 2;
 		if (tmp2 > 80 || tmp2 < -80) {
 			total = (total & 0xFC) | 0x02;
 		}
