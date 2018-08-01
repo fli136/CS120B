@@ -12,9 +12,9 @@
     <OutputFileName>$(MSBuildProjectName)</OutputFileName>
     <OutputFileExtension>.elf</OutputFileExtension>
     <OutputDirectory>$(MSBuildProjectDirectory)\$(Configuration)</OutputDirectory>
-    <AssemblyName>fli_jkwong_lab3_part3</AssemblyName>
-    <Name>fli_jkwong_lab3_part3</Name>
-    <RootNamespace>fli_jkwong_lab3_part3</RootNamespace>
+    <AssemblyName>fli_jkwong_lab3_part4</AssemblyName>
+    <Name>fli_jkwong_lab3_part4</Name>
+    <RootNamespace>fli_jkwong_lab3_part4</RootNamespace>
     <ToolchainFlavour>Native</ToolchainFlavour>
     <KeepTimersRunning>true</KeepTimersRunning>
     <OverrideVtor>false</OverrideVtor>

@@ -1,6 +1,6 @@
 /*	Partner(s) Name & E-mail: Jasmine Kwong jkwon045@ucr.edu
  *	Lab Section: 21
- *	Assignment: Lab 3  Exercise 3
+ *	Assignment: Lab 3  Exercise 4
  *	Exercise Description: [optional - include for your own benefit]
  *	
  *	I acknowledge all content contained herein, excluding template or example
@@ -11,7 +11,7 @@
 
 enum states { Init, Wait, hWait, IncWait, hRelease, yWait, yRelease, lockPress, lockRelease } state = -1 ;
 
-void LT_Tick(unsigned char x, unsigned char y, unsigned char h, unsigned char l) {
+unsigned char LT_Tick(unsigned char x, unsigned char y, unsigned char h, unsigned char l, unsigned char lock) {
 	switch ( state ) { // transitions
 		case Init:
 			state = Wait;
@@ -91,7 +91,7 @@ void LT_Tick(unsigned char x, unsigned char y, unsigned char h, unsigned char l)
 	}
 	switch ( state ) { // Actions
 		case Init:
-			PORTB = 0x00;
+			lock = 0x00;
 			break;
 		case Wait:
 			break;
@@ -102,20 +102,22 @@ void LT_Tick(unsigned char x, unsigned char y, unsigned char h, unsigned char l)
 		case yWait:
 			break;
 		case yRelease:
-			PORTB = 0x01;
+			lock = lock ? 0 : 1;
 			break;
 		case IncWait:
 			break;
 		case lockPress:
 			break;
 		case lockRelease:
-			PORTB = 0x00;
+			lock = 0x00;
 			break;
 		default:
 			break;
 	}
 	
 	PORTC = state;
+	PORTB = lock;
+	return lock;
 }
 
 int main(void)
@@ -128,14 +130,14 @@ int main(void)
 	unsigned char y = 0x00;
 	unsigned char h = 0x00;
 	unsigned char l = 0x00;
-	
+	unsigned char lock = 0x00;
     while (1) 
     {
 		x = PINA & 0x01;
 		y = (PINA & 0x02) >> 1;
 		h = (PINA & 0x04) >> 2;
 		l = (PINA & 0x80) >> 7;
-		LT_Tick(x,y,h,l);
+		lock = LT_Tick(x,y,h,l, lock);
 		
     }
 }
