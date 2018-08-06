@@ -1,9 +1,11 @@
-/*
- * fli_jkwong_lab4_part3.c
- *
- * Created: 8/6/2018 12:19:27 PM
- * Author : ucrcse
- */ 
+/*	Partner(s) Name & E-mail: Jasmine Kwong jkwon045@ucr.edu
+ *	Lab Section: 21
+ *	Assignment: Lab 4  Exercise 3 
+ *	Exercise Description: [optional - include for your own benefit]
+ *	
+ *	I acknowledge all content contained herein, excluding template or example
+ *	code, is my own original work.
+ */
 
 #include <avr/io.h>
 
@@ -20,19 +22,19 @@ void LT_tick() {
 			state = (button) ? light2p : light1r;
 			break;
 		case light1p:
-			state = (button) ? light1p : light2r;
+			state = (button) ? light1p : light1r;
 			break;
 		case light2r:
 			state = (button) ? light3p : light2r;
 			break;
 		case light2p:
-			state = (button) ? light2p : light3r;
+			state = (button) ? light2p : light2r;
 			break;
 		case light3r:
 			state = (button) ? light1p : light3r;
 			break;
 		case light3p:
-			state = (button) ? light3p : light1r;
+			state = (button) ? light3p : light3r;
 			break;
 		default:
 			state = init;
@@ -59,7 +61,7 @@ void LT_tick() {
 			break;
 	}
 	
-	PORTB = sequence & 0x37;
+	PORTB = sequence & 0x3F;
 } 
 
 int main(void)
