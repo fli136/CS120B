@@ -17,6 +17,10 @@ volatile unsigned char TimerFlag = 0; // TimerISR() sets this to 1. C programmer
 unsigned long _avr_timer_M = 1; // Start count from here, down to 0. Default 1 ms.
 unsigned long _avr_timer_cntcurr = 0; // Current internal count of 1ms ticks
 
+unsigned char light;
+
+enum states { init, light1, light2, light3 } state = -1;
+
 void TimerOn() {
 	// AVR timer/counter controller register TCCR1
 	TCCR1B = 0x0B;// bit3 = 0: CTC mode (clear timer on compare)
@@ -51,6 +55,46 @@ void TimerISR() {
 	TimerFlag = 1;
 }
 
+void LT_tick() {
+	switch(state) {
+		case init: 
+			state = light1;
+			break;
+		case light1:
+			state = light2;
+			break;
+		case light2:
+			state = light3;
+			break;
+		case light3:
+			state = light1;
+			break;
+		default:
+			state = init;
+			break;
+		
+	}
+	
+	switch(state) {
+		case init:
+			light = 0x00;
+			break;
+		case light1:
+			light = 0x01;
+			break;
+		case light2:
+			light = 0x02;
+			break;
+		case light3:
+			light = 0x04;
+			break;
+		default:
+			break;
+	
+	}
+	PORTB = light;
+}
+
 // In our approach, the C programmer does not touch this ISR, but rather TimerISR()
 ISR(TIMER1_COMPA_vect) {
 	// CPU automatically calls when TCNT1 == OCR1 (every 1 ms per TimerOn settings)
@@ -67,22 +111,23 @@ void TimerSet(unsigned long M) {
 	_avr_timer_cntcurr = _avr_timer_M;
 }
 
-void main()
+int main()
 {
 	DDRB = 0xFF; // Set port B to output
 	PORTB = 0x00; // Init port B to 0s
 	TimerSet(1000);
 	TimerOn();
-	unsigned char tmpB = 0x00;
+	light = 0x00;
 	while(1) {
 		// User code (i.e. synchSM calls)
-		tmpB = ~tmpB;	// Toggle PORTB; Temporary, bad programming style
-		PORTB = tmpB;
+		LT_tick();	// Toggle PORTB; Temporary, bad programming style
+
 		while (!TimerFlag);	// Wait 1 sec
 		TimerFlag = 0;
 		// Note: For the above a better style would use a synchSM with TickSM()
 		// This example just illustrates the use of the ISR and flag
 	}
+	return 0;
 }
 
 
