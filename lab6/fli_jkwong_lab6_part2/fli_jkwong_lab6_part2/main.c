@@ -21,7 +21,7 @@ unsigned char light;
 unsigned char button;
 unsigned char score;
 
-enum states { init, light1, light2, light3, press1, press2, release1, release2, reset } state = -1;
+enum states { init, light1, light2, light3, press1, press2, release1, release2, release, reset } state = -1;
 
 void TimerOn() {
 	// AVR timer/counter controller register TCCR1
@@ -78,10 +78,13 @@ void LT_tick() {
 			state = (button) ? press2 : release2;
 			break;
 		case release1:
-			state = (button) ? reset : release1;
+			state = release;
 			break;
 		case release2:
-			state = (button) ? reset : release2;
+			state = release;
+			break;
+		case release:
+			state = (button) ? reset : release;
 			break;
 		case reset:
 			state = (button) ? reset : light1;
@@ -114,6 +117,7 @@ void LT_tick() {
 			break;
 		case release2:
 			score = (score < 9) ? (score + 1) : score;
+			break;
 		case reset:
 			break;
 		default:

@@ -19,6 +19,7 @@ unsigned long _avr_timer_M = 1; // Start count from here, down to 0. Default 1 m
 unsigned long _avr_timer_cntcurr = 0; // Current internal count of 1ms ticks
 
 enum states { Init, Wait, dPress, iPress, bPress } state = -1;
+unsigned char time_cnt;
 unsigned char cnt;
 unsigned char A0;
 unsigned char A1;
@@ -41,20 +42,27 @@ void LT_TickFct() {
 		case dPress:
 			if (!A1 && A0) {
 				state = iPress;
+				time_cnt = 0;
 			} else if (A1 && A0) {
 				state = bPress;
+				time_cnt = 0;
 			} else if (!A1 && !A0) {
 				state = Wait;
 			}
+			time_cnt++;
+			
 			break;
 		case iPress:
 			if (!A0 && A1) {
 				state = dPress;
+				time_cnt = 0;
 			} else if (A1 && A0) {
 				state = bPress;
+				time_cnt = 0;
 			} else if (!A1 && !A0) {
 				state = Wait;
 			}
+			time_cnt++;
 			break;
 		case bPress:
 			if (!A0 && !A1) {
@@ -75,12 +83,17 @@ void LT_TickFct() {
 			cnt = 0;
 			break;
 		case Wait:
+			time_cnt = 0;
 			break;
 		case dPress:
-			cnt = (cnt > 0) ? (cnt - 1) : cnt;
+			if (((time_cnt + 9) % 10) > 8) {
+				cnt = (cnt > 0) ? (cnt - 1) : cnt;
+			}
 			break;
 		case iPress:
-			cnt = (cnt < 9) ? (cnt + 1) : cnt;
+			if (((time_cnt + 9) % 10) > 8) {
+				cnt = (cnt < 9) ? (cnt + 1) : cnt;
+			}
 			break;
 		case bPress:
 			cnt = 0;
@@ -149,9 +162,10 @@ int main(void)
 	DDRA = 0x00; PORTA = 0xFF;
 	DDRC = 0xFF; PORTC = 0x00; // LCD data lines
 	DDRD = 0xFF; PORTD = 0x00; // LCD control lines
-	TimerSet(1000);
+	TimerSet(100);
 	TimerOn();
 	cnt = 0;
+	time_cnt = 0;
 	
 	
 	// Initializes the LCD display
