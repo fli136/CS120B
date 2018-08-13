@@ -1,9 +1,11 @@
-/*
- * fli_jkwong_lab7_part1.c
- *
- * Created: 8/13/2018 12:08:09 PM
- * Author : ucrcse
- */ 
+/*	Partner(s) Name & E-mail: Jasmine Kwong jkwon045@ucr.edu
+ *	Lab Section: 21
+ *	Assignment: Lab 7 Exercise 2
+ *	Exercise Description: [optional - include for your own benefit]
+ *	
+ *	I acknowledge all content contained herein, excluding template or example
+ *	code, is my own original work.
+ */
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
@@ -18,7 +20,7 @@ typedef struct {
 const unsigned char taskSize = 3;
 Task tasks[3];
 
-enum three_States { three_init, three1, three2, three3, three4 } threeStates = -1;
+enum three_States { three_init, three1, three2, three3 } threeStates = -1;
 enum blink_states { blink_init, blinkOn, blinkOff } blinkStates = -1;
 enum combine_states { combine_init, set } combineStates = -1;
 unsigned long tasksPeriod;
@@ -37,9 +39,6 @@ int three_Tick(int state) {
 			state = three3;
 			break;
 		case three3:
-			state = three4;
-			break;
-		case three4:
 			state = three1;
 			break;
 		default:
@@ -57,9 +56,6 @@ int three_Tick(int state) {
 			break;
 		case three3:
 			three_out = 0x04;
-			break;
-		case three4:
-			three_out = 0x08;
 			break;
 	}
 	return state;

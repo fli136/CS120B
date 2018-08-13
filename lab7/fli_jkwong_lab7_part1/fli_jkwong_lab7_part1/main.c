@@ -1,14 +1,16 @@
-/*
- * fli_jkwong_lab7_part1.c
- *
- * Created: 8/13/2018 12:08:09 PM
- * Author : ucrcse
- */ 
+/*	Partner(s) Name & E-mail: Jasmine Kwong jkwon045@ucr.edu
+ *	Lab Section: 21
+ *	Assignment: Lab 7 Exercise 1
+ *	Exercise Description: [optional - include for your own benefit]
+ *	
+ *	I acknowledge all content contained herein, excluding template or example
+ *	code, is my own original work.
+ */
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
 
-enum three_States { three_init, three1, three2, three3, three4 } threeStates = -1;
+enum three_States { three_init, three1, three2, three3 } threeStates = -1;
 enum blink_states { blink_init, blinkOn, blinkOff } blinkStates = -1;
 enum combine_states { combine_init, set } combine_states = -1;
 unsigned char three_out;
@@ -26,11 +28,7 @@ void three_Tick() {
 			threeStates = three3;
 			break;
 		case three3:
-			threeStates = three4;
-			break;
-		case three4:
 			threeStates = three1;
-			break;
 		default:
 			threeStates = three_init;
 			break;
@@ -46,9 +44,6 @@ void three_Tick() {
 			break;
 		case three3:
 			three_out = 0x04;
-			break;
-		case three4:
-			three_out = 0x08;
 			break;
 	}
 }
