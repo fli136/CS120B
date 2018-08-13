@@ -1,0 +1,330 @@
+/*	Partner(s) Name & E-mail: Jasmine Kwong jkwon045@ucr.edu
+ *	Lab Section: 21
+ *	Assignment: Lab 7 Exercise 4
+ *	Exercise Description: [optional - include for your own benefit]
+ *	
+ *	I acknowledge all content contained herein, excluding template or example
+ *	code, is my own original work.
+ */
+
+#include <avr/io.h>
+#include <avr/interrupt.h>
+
+typedef struct {
+	int state;
+	unsigned long period;
+	unsigned long elapsedTime;
+	int (*TickFct)(int);
+} Task;
+
+const unsigned char taskSize = 5;
+Task tasks[5];
+
+enum three_States { three_init, three1, three2, three3 } threeStates = -1;
+enum blink_states { blink_init, blinkOn, blinkOff } blinkStates = -1;
+enum combine_states { combine_init, set } combineStates = -1;
+enum speaker_states { speaker_init, speakerOn, speakerOff } speakerStates = -1;
+enum fre_states { fre_init, wait, incP, incR, decP, decR } freStates = -1;
+unsigned long tasksPeriod;
+unsigned char three_out;
+unsigned char blink_out;
+unsigned char speaker_out;
+unsigned char inc;
+unsigned char dec;
+unsigned char button;
+unsigned long count;
+unsigned long frequency = 2;
+
+int three_Tick(int state) {
+	switch (state) {
+		case three_init:
+			state = three1;
+			break;
+		case three1:
+			state = three2;
+			break;
+		case three2:
+			state = three3;
+			break;
+		case three3:
+			state = three1;
+			break;
+		default:
+			state = three_init;
+			break;
+	}
+	switch (state) {
+		case three_init:
+			break;
+		case three1:
+			three_out = 0x01;
+			break;
+		case three2:
+			three_out = 0x02;
+			break;
+		case three3:
+			three_out = 0x04;
+			break;
+	}
+	return state;
+}
+
+int blink_Tick(int state) {
+	switch (state) {
+		case blink_init:
+			state = blinkOn;
+			break;
+		case blinkOn:
+			state = blinkOff;
+			break;
+		case blinkOff:
+			state = blinkOn;
+			break;
+		default:
+			state = blink_init;
+			break;
+	}
+	
+	switch (state) {
+		case blink_init:
+			break;
+		case blinkOn:
+			blink_out = 0x08;
+			break;
+		case blinkOff:
+			blink_out = 0x00;
+			break;
+	}
+	return state;
+}
+
+int speaker_Tick(int state) {
+	switch (state) {
+		case speaker_init:
+			state = speakerOn;
+			break;
+		case speakerOn:
+			if (!(count < frequency)) {
+				state = speakerOff;
+				count = 0;	
+			} else {
+				count++;
+			}
+			break;
+		case speakerOff:
+			if (!(count < frequency)) {
+				state = (button) ? speakerOn : speakerOff;
+				count = 0;
+			} else {
+				count++;
+			}
+			break;
+		default:
+			state = speaker_init;
+			break;
+	}
+	
+	switch (state) {
+		case speaker_init:
+			count = 0;
+			break;
+		case speakerOn:
+			speaker_out = 0x10;
+			break;
+		case speakerOff:
+			speaker_out = 0x00;
+			break;
+	}
+	
+	return state;
+}
+
+int fre_Tick(int state) {
+	switch(state) {
+		case fre_init:
+			state = wait;
+			break;
+		case wait:
+			if (inc) {
+				state = incP;
+			} else if (dec) {
+				state = decP;
+			}
+			break;
+		case incP:
+			state = (inc) ? incP : incR;
+			break;
+		case decP:
+			state = (dec) ? decP : decR;
+			break;
+		case incR:
+			state = wait;
+			break;
+		case decR:
+			state = wait;
+			break;
+		default:
+			state = fre_init;
+			break;
+	}
+	
+	switch(state) {
+		case fre_init:
+			break;
+		case wait:
+			break;
+		case incP:
+			break;
+		case decP:
+			break;
+		case incR:
+			frequency++;
+			break;
+		case decR:
+			frequency = (frequency > 0) ? frequency - 1: frequency;
+			break;
+	}
+	return state;
+}
+
+int combine_Tick(int state) {
+	switch (state) {
+		case combine_init:
+			state = set;
+			break;
+		case set:
+			break;	
+		default:
+			state = combine_init;
+			break;
+	}
+	
+	switch (state) {
+		case combine_init:
+			break;
+		case set:
+			PORTB = three_out | blink_out | speaker_out;
+			break;
+	}
+	return state;
+}
+
+
+volatile unsigned char TimerFlag = 0; // TimerISR() sets this to 1. C programmer should clear to 0.
+
+// Internal variables for mapping AVR's ISR to our cleaner TimerISR model.
+unsigned long _avr_timer_M = 1; // Start count from here, down to 0. Default 1 ms.
+unsigned long _avr_timer_cntcurr = 0; // Current internal count of 1ms ticks
+
+void TimerOn() {
+	// AVR timer/counter controller register TCCR1
+	TCCR1B = 0x0B;// bit3 = 0: CTC mode (clear timer on compare)
+	// bit2bit1bit0=011: pre-scaler /64
+	// 00001011: 0x0B
+	// SO, 8 MHz clock or 8,000,000 /64 = 125,000 ticks/s
+	// Thus, TCNT1 register will count at 125,000 ticks/s
+
+	// AVR output compare register OCR1A.
+	OCR1A = 125;	// Timer interrupt will be generated when TCNT1==OCR1A
+	// We want a 1 ms tick. 0.001 s * 125,000 ticks/s = 125
+	// So when TCNT1 register equals 125,
+	// 1 ms has passed. Thus, we compare to 125.
+	// AVR timer interrupt mask register
+	TIMSK1 = 0x02; // bit1: OCIE1A -- enables compare match interrupt
+
+	//Initialize avr counter
+	TCNT1=0;
+
+	_avr_timer_cntcurr = _avr_timer_M;
+	// TimerISR will be called every _avr_timer_cntcurr milliseconds
+
+	//Enable global interrupts
+	SREG |= 0x80; // 0x80: 1000000
+}
+
+void TimerOff() {
+	TCCR1B = 0x00; // bit3bit1bit0=000: timer off
+}
+
+void TimerISR() {
+	unsigned char i;
+	for (i = 0; i<taskSize; ++i) {
+		if(tasks[i].elapsedTime >= tasks[i].period) {
+			tasks[i].state = tasks[i].TickFct(tasks[i].state);
+			tasks[i].elapsedTime = 0;
+		}
+		tasks[i].elapsedTime += tasksPeriod;	
+	}
+}
+
+// In our approach, the C programmer does not touch this ISR, but rather TimerISR()
+ISR(TIMER1_COMPA_vect) {
+	// CPU automatically calls when TCNT1 == OCR1 (every 1 ms per TimerOn settings)
+	_avr_timer_cntcurr--; // Count down to 0 rather than up to TOP
+	if (_avr_timer_cntcurr == 0) { // results in a more efficient compare
+		TimerISR(); // Call the ISR that the user uses
+		_avr_timer_cntcurr = _avr_timer_M;
+	}
+}
+
+// Set TimerISR() to tick every M ms
+void TimerSet(unsigned long M) {
+	_avr_timer_M = M;
+	_avr_timer_cntcurr = _avr_timer_M;
+}
+
+
+
+int main(void)
+{
+    /* Replace with your application code */
+	DDRA = 0x00; PORTA = 0xFF;
+	DDRB = 0xFF; PORTB = 0x00;
+
+	unsigned char i = 0;
+	tasks[i].state = threeStates;
+	tasks[i].period = 300;
+	tasks[i].elapsedTime = 0;
+	tasks[i].TickFct = &three_Tick;
+	i++;
+	tasks[i].state = blinkStates;
+	tasks[i].period = 300;
+	tasks[i].elapsedTime = 0;
+	tasks[i].TickFct = &blink_Tick;
+	i++;
+	tasks[i].state = speakerStates;
+	tasks[i].period = 1;
+	tasks[i].elapsedTime = 0;
+	tasks[i].TickFct = &speaker_Tick;
+	i++;
+	tasks[i].state = freStates;
+	tasks[i].period = 1;
+	tasks[i].elapsedTime = 0;
+	tasks[i].TickFct = &fre_Tick;
+	i++;
+	tasks[i].state = combineStates;
+	tasks[i].period = 0;
+	tasks[i].elapsedTime = 0;
+	tasks[i].TickFct = &combine_Tick;
+	
+	three_out = 0x00;
+	blink_out = 0x00;
+	button = 0x00;
+	tasksPeriod = 1;
+	
+	TimerSet(tasksPeriod);
+	TimerOn();
+	
+    while (1) 
+    {
+		inc = ~PINA & 0x01;
+		dec = ~PINA & 0x02;
+		button = ~PINA & 0x04;
+	//	tasks[2].period = frequency++;
+		//sleep();
+    }
+	return 0;
+}
+
+
+
