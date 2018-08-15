@@ -32,7 +32,7 @@ int main(void)
 	ADC_init();
 	
 	unsigned short light = ADC;
-	unsigned short MAX = 344;
+	unsigned short MAX = 92;
 	unsigned short level = MAX >> 3; 
 	unsigned char i;
 	unsigned char j;

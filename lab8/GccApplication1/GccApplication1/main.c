@@ -36,7 +36,7 @@ int main(void)
     { 
 		x = ADC;
 		b_char = (char) x;
-		d_char = (char) (x >> 6);
+		d_char = (char) (x >> 8);
 		PORTB = b_char;
 		PORTD = d_char & 0x03;
     }

@@ -31,12 +31,12 @@ int main(void)
 	ADC_init();
 	
 	unsigned short x = ADC;
-	unsigned short MAX = 330;
+	unsigned short MAX = 92;
 	
     while (1)
     { 
 		x = ADC;
-		if (x > (MAX/2)) {
+		if (x > MAX) {
 			b_char = 0x01;
 		} else {
 			b_char = 0x00;
