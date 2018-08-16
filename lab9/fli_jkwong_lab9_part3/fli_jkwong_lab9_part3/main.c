@@ -8,8 +8,14 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 
-double scale[32] = {659.25, 0, 659.25, 0, 0, 0, 659.25, 0, 0, 0, 523.25, 0, 659.25, 0, 0, 0,
-					 783.99, 783.99, 783.99, 0, 0, 0, 0, 0, 392.00, 392.00, 392.00, 0, 0, 0, 0, 0,};
+#define E5 659.25
+#define C5 523.25
+#define G4 392.00
+#define E4 329.63
+
+double scale[48] = {659.25, 0, 659.25, 0, 0, 0, 659.25, 0, 0, 0, 523.25, 0, 659.25, 0, 0, 0,
+					 783.99, 783.99, 783.99, 0, 0, 0, 0, 0, 392.00, 392.00, 392.00, 0, 0, 0, 0, 0,
+					 C5, C5, C5, 0, 0, 0, G4, G4, 0, 0, 0, 0, E4, E4, 0, 0};
 
 void set_PWM(double frequency) {
 	static double current_frequency; // Keeps track of the currently set frequency
@@ -104,7 +110,7 @@ unsigned char cnt;
 void tick() {
 	set_PWM(scale[cnt]);
 	cnt++;
-	if (cnt > 31) {
+	if (cnt > 47) {
 		cnt = 0;
 	}
 }
