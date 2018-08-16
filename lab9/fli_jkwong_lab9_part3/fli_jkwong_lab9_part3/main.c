@@ -12,10 +12,28 @@
 #define C5 523.25
 #define G4 392.00
 #define E4 329.63
+#define F5 698.46
+#define A4 440.00
+#define C4 261.63
+#define A4b 415.30
+#define B4b 466.16
+#define F4 349.23
+#define E4 329.63
+#define D4 293.66
 
 double scale[48] = {659.25, 0, 659.25, 0, 0, 0, 659.25, 0, 0, 0, 523.25, 0, 659.25, 0, 0, 0,
 					 783.99, 783.99, 783.99, 0, 0, 0, 0, 0, 392.00, 392.00, 392.00, 0, 0, 0, 0, 0,
 					 C5, C5, C5, 0, 0, 0, G4, G4, 0, 0, 0, 0, E4, E4, 0, 0};
+					 
+double scale2[144] = {C5, 0, C5, 0, C5, 0, C5, C5, C5, C5, C5, 0, A4b, A4b, A4b, A4b, A4b, 0, B4b,
+					B4b, B4b, B4b, B4b, 0, C5, 0, 0, 0, B4b, 0, C5, C5, C5, C5, C5, C5, C5, C5,
+					 C5, C5, C5, C5, C5, C5, C5, C5, C5, 0,
+					 G4, G4, G4, G4, G4, 0, F4, F4, F4, F4, F4, 0, G4, G4, G4, G4, G4, 0,
+					 F4, F4, 0, B4b, B4b, B4b, B4b, B4b, 0, B4b, B4b, 0, A4, A4, A4, A4, A4, 0,
+					 B4b, B4b, 0, A4, A4, A4, A4, A4, 0, A4, A4, 0, G4, G4, G4, G4, G4, 0,
+					 F4, F4, F4, F4, F4, 0, E4, E4, E4, E4, E4, 0, F4, F4, 0, D4, D4, D4,
+					 D4, D4, D4, D4, D4, D4, D4, D4, D4, D4, D4, D4, D4, D4, D4, D4, D4, D4, 
+					  D4, D4, D4, D4, D4, 0}; 
 
 void set_PWM(double frequency) {
 	static double current_frequency; // Keeps track of the currently set frequency
@@ -108,10 +126,10 @@ void TimerSet(unsigned long M) {
 unsigned char cnt;
 
 void tick() {
-	set_PWM(scale[cnt]);
+	set_PWM(scale2[cnt]);
 	cnt++;
-	if (cnt > 47) {
-		cnt = 0;
+	if (cnt > 144) {
+		cnt = 24;
 	}
 }
 
@@ -119,7 +137,7 @@ int main(void)
 {
 	DDRB = 0xFF; PORTB = 0x00;
 	
-	TimerSet(90);
+	TimerSet(72);
 	TimerOn();
 	
 	PWM_on();
