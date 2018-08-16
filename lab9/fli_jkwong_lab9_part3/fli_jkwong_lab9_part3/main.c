@@ -129,7 +129,7 @@ void tick() {
 	set_PWM(scale2[cnt]);
 	cnt++;
 	if (cnt > 144) {
-		cnt = 24;
+		cnt = 48;
 	}
 }
 
@@ -137,7 +137,7 @@ int main(void)
 {
 	DDRB = 0xFF; PORTB = 0x00;
 	
-	TimerSet(72);
+	TimerSet(90);
 	TimerOn();
 	
 	PWM_on();
