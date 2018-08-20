@@ -125,27 +125,73 @@ void TimerSet(unsigned long M) {
 
 unsigned char cnt;
 
-void tick() {
+void playing() {
 	set_PWM(scale2[cnt]);
 	cnt++;
-	if (cnt > 144) {
-		cnt = 48;
+}
+
+enum states { init, wait, press, play, release} state = -1;
+unsigned char A0;
+ 
+void tick() {
+	switch(state) {
+		case init:
+			state = wait;
+			break;
+		case wait:
+			if (A0) {
+				state = press;
+			}
+			break;
+		case press:
+			state = play;
+			break;
+		case play:
+			if (cnt > 144) {
+				state = release;
+			}
+			break;
+		case release:
+			if (!A0) {
+				state = wait;
+			}
+			cnt = 0;
+			break;
+		default:
+			state = init;
+			break;
+	}
+	switch(state) {
+		case init:
+			break;
+		case wait:
+			break;
+		case press:
+			break;
+		case play:
+			playing();
+			break;
+		case release:
+			set_PWM(0);
+			break;
 	}
 }
 
 int main(void)
 {
+	DDRA = 0x00; PORTA = 0xFF;
 	DDRB = 0xFF; PORTB = 0x00;
 	
-	TimerSet(90);
+	TimerSet(100);
 	TimerOn();
 	
 	PWM_on();
 	cnt = 0;
-	set_PWM(261.63);
+	set_PWM(0);
     /* Replace with your application code */
     while (1) 
     {
+		A0 = ~PINA & 0x01;
 		tick();
 		while (!TimerFlag);
 		TimerFlag = 0;
