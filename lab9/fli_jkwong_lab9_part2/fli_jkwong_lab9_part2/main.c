@@ -1,9 +1,11 @@
-/*
- * fli_jkwong_lab9_part2.c
- *
- * Created: 8/16/2018 2:40:19 PM
- * Author : ucrcse
- */ 
+/*	Partner(s) Name & E-mail: Jasmine Kwong jkwon045@ucr.edu
+ *	Lab Section: 21
+ *	Assignment: Lab 9 Exercise 2
+ *	Exercise Description: [optional - include for your own benefit]
+ *	
+ *	I acknowledge all content contained herein, excluding template or example
+ *	code, is my own original work.
+ */
 
 
 #include <avr/io.h>
