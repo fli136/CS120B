@@ -1,6 +1,6 @@
 /*	Partner(s) Name & E-mail: Jasmine Kwong jkwon045@ucr.edu
  *	Lab Section: 21
- *	Assignment: Lab 10 Exercise 1
+ *	Assignment: Lab 10 Exercise 4
  *	Exercise Description: [optional - include for your own benefit]
  *	
  *	I acknowledge all content contained herein, excluding template or example
@@ -11,8 +11,10 @@
 #include <timer.h>
 #include <avr/interrupt.h>
 #include <stdio.h>
+#include "io.c"
+#include <string.h>
 
-unsigned short numTasks = 1;
+unsigned short numTasks = 2;
 
 unsigned long int findGCD(unsigned long int a, unsigned long int b)
 {
@@ -89,9 +91,13 @@ unsigned char GetKeypadKey() {
 
 }
 
+char* from_key = " ";
+
 enum keypad_states {getkey} keypad_state = -1; 
 
 unsigned char x;
+
+unsigned char in;
 
 int keypad_tick (int state) {
 	switch(state) {
@@ -106,26 +112,30 @@ int keypad_tick (int state) {
 		case getkey:
 			x = GetKeypadKey();
 			switch (x) {
-				case '\0': PORTB = 0x1F; break; // All 5 LEDs on
-				case '1': PORTB = 0x01; break; // hex equivalent
-				case '2': PORTB = 0x02; break;
-				case '3': PORTB = 0x03; break;
-				case '4': PORTB = 0x04; break;
-				case '5': PORTB = 0x05; break;
-				case '6': PORTB = 0x06; break;
-				case '7': PORTB = 0x07; break;
-				case '8': PORTB = 0x08; break;
-				case '9': PORTB = 0x09; break;
+				case '\0': break; // All 5 LEDs on
+	/*			case '1': from_key[0] = '1'; break; // hex equivalent
+				case '2': from_key[0] = '2'; break;
+				case '3': from_key[0] = '3'; break;
+				case '4': from_key[0] = '4'; break;
+				case '5': from_key[0] = '5'; break;
+				case '6': from_key[0] = '6'; break;
+				case '7': from_key[0] = '7'; break;
+				case '8': from_key[0] = '8'; break;
+				case '9': from_key[0] = '9'; break;
 
 				// . . . ***** FINISH *****
-				case 'A': PORTB = 0x0A; break;
-				case 'B': PORTB = 0x0B; break;
-				case 'C': PORTB = 0x0C; break;
-				case 'D': PORTB = 0x0D; break;
-				case '*': PORTB = 0x0E; break;
-				case '0': PORTB = 0x00; break;
-				case '#': PORTB = 0x0F; break;
-				default: PORTB = 0x1B; break; // Should never occur. Middle LED off.
+				case 'A': from_key[0] = 'A'; break;
+				case 'B': from_key[0] = 'B'; break;
+				case 'C': from_key[0] = 'C'; break;
+				case 'D': from_key[0] = 'D'; break;
+				case '*': from_key[0] = '*'; break;
+				case '0': from_key[0] = '0'; break;
+				case '#': from_key[0] = '#'; break;*/
+				default: 
+					LCD_Cursor(in + 1);
+					LCD_WriteData(x); 
+					in = (in + 1) % 16;
+					break; // Should never occur. Middle LED off.
 			}
 			break;
 	}
@@ -133,26 +143,59 @@ int keypad_tick (int state) {
 	return state;
 }
 
+unsigned char in;
+
+enum msg_states { read } msg_state = -1;
+
+int msg_Tick(int state) {
+	switch(state) {
+		case read:
+			break;
+		default:
+			state = read;
+			break;
+	}
+	switch(state) {
+		case read:
+			//LCD_ClearScreen();
+			LCD_WriteData(from_key[0]);
+			break;
+	}
+	return state;
+}
+
 int main(void)
 {
+	DDRA = 0xFF; PORTA = 0x00;
 	DDRB = 0xFF; PORTB = 0x00; // PORTB set to output, outputs init 0s
 	DDRC = 0xF0; PORTC = 0x0F; // PC7..4 outputs init 0s, PC3..0 inputs init 1s
-	
-	static task task1;
+	DDRD = 0xFF; PORTD = 0xFF;
+	static task task1, task2;
 	
 	task1.state = keypad_state;
-	task1.period = 1;
+	task1.period = 300;
 	task1.elapsedTime = 0;
 	task1.TickFct = &keypad_tick;
 	
-	task *tasks[] = { &task1 };
+	task2.state = msg_state;
+	task2.period = 100;
+	task2.elapsedTime = 0;
+	task2.TickFct = &msg_Tick;
+	
+	LCD_init();
+
+	in = 0;
+	
+	task *tasks[] = { &task1, &task2 };
 	
 	TimerSet(1);
 	TimerOn();
+	LCD_DisplayString(1, "Congratulations");
+	LCD_Cursor(1);
 	
 	unsigned short i;
 	while(1) {
-		for ( i = 0; i < numTasks; i++ ) {
+		for ( i = 0; i < 1; i++ ) {
 			// Task is ready to tick
 			if ( tasks[i]->elapsedTime == tasks[i]->period ) {
 				// Setting next state for task
@@ -166,6 +209,12 @@ int main(void)
 		TimerFlag = 0;
 	}
 }
+
+
+
+
+
+
 
 
 

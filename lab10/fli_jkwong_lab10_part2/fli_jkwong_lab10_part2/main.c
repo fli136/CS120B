@@ -1,6 +1,6 @@
 /*	Partner(s) Name & E-mail: Jasmine Kwong jkwon045@ucr.edu
  *	Lab Section: 21
- *	Assignment: Lab 10 Exercise 1
+ *	Assignment: Lab 10 Exercise 2
  *	Exercise Description: [optional - include for your own benefit]
  *	
  *	I acknowledge all content contained herein, excluding template or example
@@ -11,6 +11,8 @@
 #include <timer.h>
 #include <avr/interrupt.h>
 #include <stdio.h>
+#include "io.c"
+#include <string.h>
 
 unsigned short numTasks = 1;
 
@@ -133,17 +135,50 @@ int keypad_tick (int state) {
 	return state;
 }
 
+char msg[] = "CS120B is Legend.. wait for it DARY!";
+
+unsigned char ind = 0;
+
+enum msg_states { read } msg_state = -1;
+
+char reading[17];
+
+int msg_Tick(int state) {
+	switch(state) {
+		case read:
+			break;
+		default:
+			state = read;
+			break;
+	}
+	switch(state) {
+		case read:
+			strncpy(reading, msg + ind, 16);
+			reading[16] = '\0';
+			LCD_ClearScreen();
+			LCD_DisplayString(1, (const) reading);
+			ind++;
+			ind = ind % 21;
+			break;
+	}
+	return state;
+}
+
 int main(void)
 {
+	DDRA = 0xFF; PORTA = 0x00;
 	DDRB = 0xFF; PORTB = 0x00; // PORTB set to output, outputs init 0s
 	DDRC = 0xF0; PORTC = 0x0F; // PC7..4 outputs init 0s, PC3..0 inputs init 1s
-	
+	DDRD = 0xFF; PORTD = 0xFF;
 	static task task1;
 	
-	task1.state = keypad_state;
-	task1.period = 1;
+	task1.state = msg_state;
+	task1.period = 500;
 	task1.elapsedTime = 0;
-	task1.TickFct = &keypad_tick;
+	task1.TickFct = &msg_Tick;
+	
+	LCD_init();
+
 	
 	task *tasks[] = { &task1 };
 	
@@ -166,6 +201,8 @@ int main(void)
 		TimerFlag = 0;
 	}
 }
+
+
 
 
 
