@@ -16,6 +16,10 @@
 
 /*-------------------------------------------------------------------------*/
 
+void LCD_CursorOff(void) {
+	LCD_WriteCommand(0x0C);
+}
+
 void LCD_ClearScreen(void) {
    LCD_WriteCommand(0x01);
 }
@@ -64,7 +68,7 @@ void LCD_Cursor(unsigned char column) {
       LCD_WriteCommand(0x80 + column - 1);
    } else {
       LCD_WriteCommand(0xB8 + column - 9);	// 16x1 LCD: column - 1
-											// 16x2 LCD: column - 9
+	  LCD_CursorOff();						// 16x2 LCD: column - 9
    }
 }
 

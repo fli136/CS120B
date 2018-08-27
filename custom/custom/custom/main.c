@@ -15,6 +15,9 @@
 typedef unsigned char uc;
 typedef unsigned short us;
 
+uc period = 25;
+uc task_num = 3;
+
 typedef struct _task {
 	/*Tasks should have members that include: state, period,
 		a measurement of elapsed time, and a function pointer.*/
@@ -63,26 +66,94 @@ int movement_tick(int state) {
 			ADMUX = (ADMUX & 0xF8) | 0x01;
 			wait(200);
 			ud = ADC;
-			if (lr < (initial_lr - 40)) {
+			if (ud < (initial_ud - 150)) {
 				output += 0x01;
-				cursor = (cursor < 2) ? 1 : cursor - 1;
-			}
-			if (lr > (initial_lr + 80)) {
-				output += 0x02;
 				cursor = (cursor > 15) ? 16 : cursor + 1;
 			}
-			if (ud < (initial_ud - 40)) {
+			if (ud > (initial_ud + 150)) {
+				output += 0x02;
+				cursor = (cursor < 2) ? 1 : cursor - 1;
+			}
+			if (lr < (initial_lr - 150)) {
 				output += 0x04;
 				row = 1;
 			}
-			if (ud > (initial_ud + 40)) {
+			if (lr > (initial_lr + 150)) {
 				output += 0x08;
 				row = 0;
 			}
+			LCD_WriteData(' ');
 			LCD_Cursor(cursor + (row * 16));
+			LCD_WriteData('+');
 			PORTB = output;
 			break;
 	}
+	return state;
+}
+
+enum display1_states { display1 } display1_state = -1;
+
+uc row1[16] = {' ', ' ', 'A', ' ', ' ', 'A', ' ', ' ', 'A', 
+	' ', ' ', 'A', ' ', ' ', 'A', 'E'};
+
+uc row1_pos = 0;
+
+int display1_tick(int state) {
+	
+	uc i;
+	
+	switch(state) {
+		case display1:
+			break;
+		default:
+			state = display1;
+			break;
+	}
+	
+	switch (state) {
+		case display1:
+			LCD_Cursor(1);
+			for (i = 0; i < 16; i++) {
+				LCD_WriteData(row1[(row1_pos + i) % 16]);
+			}
+			row1_pos = (row1_pos < 16) ? row1_pos + 1 : 1;
+			break;
+			
+	}
+	
+	return state;
+}
+
+enum display2_states { display2 } display2_state = -1;
+
+uc row2[16] = {' ', ' ', 'B', ' ', ' ', 'B', ' ', ' ', 'B',
+' ', ' ', 'B', ' ', ' ', 'B', 'E'};
+
+uc row2_pos = 0;
+
+int display2_tick(int state) {
+	
+	uc i;
+	
+	switch(state) {
+		case display2:
+		break;
+		default:
+		state = display2;
+		break;
+	}
+	
+	switch (state) {
+		case display1:
+		LCD_Cursor(17);
+		for (i = 0; i < 16; i++) {
+			LCD_WriteData(row2[(row2_pos + i) % 16]);
+		}
+		row2_pos = (row2_pos < 16) ? row2_pos + 1 : 1;
+		break;
+		
+	}
+	
 	return state;
 }
 
@@ -106,23 +177,33 @@ int main(void)
 	cursor = 1;
 	row = 0;
 	
-	static task task1;
+	static task task1, task2, task3;
 	
 	task1.state = movement_state;
 	task1.period = 200;
 	task1.elapsedTime = 0;
 	task1.TickFct = &movement_tick;
 	
-	task *tasks[] = {&task1};
+	task2.state = display1_state;
+	task2.period = 400;
+	task2.elapsedTime = 0;
+	task2.TickFct = &display1_tick;
 	
-	TimerSet(1);
+	task3.state = display2_state;
+	task3.period = 200;
+	task3.elapsedTime = 0;
+	task3.TickFct = &display2_tick;
+	
+	task *tasks[] = {&task2, &task3, &task1};
+	
+	TimerSet(period);
 	TimerOn();
 	
     /* Replace with your application code */
 	us i;
     while (1) 
     {
-		for ( i = 0; i < 1; i++ ) {
+		for ( i = 0; i < task_num; i++ ) {
 			// Task is ready to tick
 			if ( tasks[i]->elapsedTime == tasks[i]->period ) {
 				// Setting next state for task
@@ -130,7 +211,7 @@ int main(void)
 				// Reset the elapsed time for next tick.
 				tasks[i]->elapsedTime = 0;
 			}
-			tasks[i]->elapsedTime += 1;
+			tasks[i]->elapsedTime += period;
 		}
 		while(!TimerFlag);
 		TimerFlag = 0;
