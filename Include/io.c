@@ -23,6 +23,29 @@ void LCD_CursorOff(void) {
 void LCD_ClearScreen(void) {
    LCD_WriteCommand(0x01);
 }
+void LCD_Rabbit(void) {
+	LCD_WriteCommand(0x40);
+	LCD_WriteData(0x11);
+	LCD_WriteData(0x1B);
+	LCD_WriteData(0x1B);
+	LCD_WriteData(0x0A);
+	LCD_WriteData(0x0E);
+	LCD_WriteData(0x11);
+	LCD_WriteData(0x11);
+	LCD_WriteData(0x0E);
+}
+
+void LCD_Fox(void) {
+	LCD_WriteCommand(0x48);
+	LCD_WriteData(0x11);
+	LCD_WriteData(0x1B);
+	LCD_WriteData(0x1F);
+	LCD_WriteData(0x11);
+	LCD_WriteData(0x11);
+	LCD_WriteData(0x11);
+	LCD_WriteData(0x0E);
+	LCD_WriteData(0x04);
+}
 
 void LCD_init(void) {
 
