@@ -40,7 +40,7 @@ void LCD_Fox(void) {
 	LCD_WriteData(0x11);
 	LCD_WriteData(0x1B);
 	LCD_WriteData(0x1F);
-	LCD_WriteData(0x11);
+	LCD_WriteData(0x15);
 	LCD_WriteData(0x11);
 	LCD_WriteData(0x11);
 	LCD_WriteData(0x0E);

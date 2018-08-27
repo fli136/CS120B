@@ -148,8 +148,8 @@ int movement_tick(int state) {
 
 enum display1_states { d1_wait, display1 } display1_state = -1;
 
-uc row1[16] = {' ', ' ', 'A', ' ', ' ', 'A', ' ', ' ', 'A', 
-	' ', ' ', 'A', ' ', ' ', 'A', 'E'};
+uc row1[16] = {' ', ' ', 0, ' ', ' ', 0, ' ', ' ', 0, 
+	' ', ' ', 0, ' ', ' ', 0, 'E'};
 
 uc row1_pos = 0;
 
@@ -189,8 +189,8 @@ int display1_tick(int state) {
 
 enum display2_states { d2_wait, display2 } display2_state = -1;
 
-uc row2[16] = {' ', ' ', 'B', ' ', ' ', 'B', ' ', ' ', 'B',
-' ', ' ', 'B', ' ', ' ', 'B', 'E'};
+uc row2[16] = {' ', ' ', 1, ' ', ' ', 1, ' ', ' ', 1,
+' ', ' ', 1, ' ', ' ', 1, 'E'};
 
 uc row2_pos = 0;
 
@@ -242,6 +242,8 @@ int main(void)
 	initial_ud = ADC;
 	
 	LCD_init();
+	LCD_Rabbit();
+	LCD_Fox();
 	
 	//LCD_DisplayString(1, "Congratuations");
 	
