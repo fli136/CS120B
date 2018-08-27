@@ -253,17 +253,17 @@ int main(void)
 	static task task1, task2, task3, task4;
 	
 	task1.state = movement_state;
-	task1.period = 200;
+	task1.period = 150;
 	task1.elapsedTime = 0;
 	task1.TickFct = &movement_tick;
 	
 	task2.state = display1_state;
-	task2.period = 400;
+	task2.period = 600;
 	task2.elapsedTime = 0;
 	task2.TickFct = &display1_tick;
 	
 	task3.state = display2_state;
-	task3.period = 200;
+	task3.period = 300;
 	task3.elapsedTime = 0;
 	task3.TickFct = &display2_tick;
 	
@@ -278,11 +278,10 @@ int main(void)
 	TimerOn();
 	
     /* Replace with your application code */
-	us i;
     while (1) 
     {
 		start_button = (~PINA & 0x04) >> 2;
-		for ( i = 0; i < task_num; i++ ) {
+		for (us i = 0; i < task_num; i++ ) {
 			// Task is ready to tick
 			if ( tasks[i]->elapsedTime == tasks[i]->period ) {
 				// Setting next state for task
