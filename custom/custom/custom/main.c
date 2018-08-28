@@ -44,6 +44,18 @@ void wait(int rounds) {
 	}
 }
 
+uc rabbit[16] = {' ', ' ', 0, ' ', ' ', 0, ' ', ' ', 0,
+' ', ' ', 0, ' ', ' ', 0, 'E'};
+
+uc row1_pos = 0;
+
+uc fox[16] = {' ', ' ', 1, ' ', ' ', 1, ' ', ' ', 1,
+' ', ' ', 1, ' ', ' ', 1, 'E'};
+
+uc row1[16], row2[16];
+
+uc row2_pos = 0;
+
 uc start = 0;
 
 enum menu_states { menu, press, play} menu_state = -1;
@@ -79,6 +91,12 @@ int menu_tick(int state) {
 			LCD_DisplayString(1, "Press button to begin!");
 			break;
 		case press:
+			for (uc i = 0; i < 16; i++) {
+				row1[i] = rabbit[i];
+				row2[i] = fox[i];
+			}
+			row2_pos = 0;
+			row1_pos = 0;
 			break;
 		case play:
 			break;
@@ -148,11 +166,6 @@ int movement_tick(int state) {
 
 enum display1_states { d1_wait, display1 } display1_state = -1;
 
-uc row1[16] = {' ', ' ', 0, ' ', ' ', 0, ' ', ' ', 0, 
-	' ', ' ', 0, ' ', ' ', 0, 'E'};
-
-uc row1_pos = 0;
-
 int display1_tick(int state) {
 	
 	switch(state) {
@@ -188,11 +201,6 @@ int display1_tick(int state) {
 }
 
 enum display2_states { d2_wait, display2 } display2_state = -1;
-
-uc row2[16] = {' ', ' ', 1, ' ', ' ', 1, ' ', ' ', 1,
-' ', ' ', 1, ' ', ' ', 1, 'E'};
-
-uc row2_pos = 0;
 
 int display2_tick(int state) {
 	
