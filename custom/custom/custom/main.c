@@ -12,11 +12,12 @@
 #include <stdio.h>
 #include "io.c"
 #include <string.h>
+#include <avr/eeprom.h>
 typedef unsigned char uc;
 typedef unsigned short us;
 
 uc period = 25;
-uc task_num = 5;
+uc task_num = 6;
 
 typedef struct _task {
 	/*Tasks should have members that include: state, period,
@@ -45,20 +46,18 @@ void wait(int rounds) {
 }
 
 uc rabbit[16] = {' ', ' ', 0, ' ', ' ', 0, ' ', ' ', 0,
-' ', ' ', 0, ' ', ' ', 0, 'E'};
+' ', ' ', 0, ' ', ' ', 0, ' '};
 
-uc row1_pos = 0;
+uc row1_pos, row2_pos, score, ammo;
 
 uc fox[16] = {' ', ' ', 1, ' ', ' ', 1, ' ', ' ', 1,
-' ', ' ', 1, ' ', ' ', 1, 'E'};
+' ', ' ', 1, ' ', ' ', 1, ' '};
 
 uc row1[16], row2[16];
 
-uc row2_pos = 0;
-
 uc start = 0;
 
-enum menu_states { menu, press, play} menu_state = -1;
+enum menu_states { menu, press, play, endgame} menu_state = -1;
 
 uc start_button;
 
@@ -79,6 +78,15 @@ int menu_tick(int state) {
 			start = 1;
 			if (start_button) {
 				state = press;
+			} else if (ammo == 0) {
+				state = endgame;
+			}
+			break;
+		case endgame:
+			start = 0;
+			if (start_button) {
+				state = menu;
+				LCD_ClearScreen();
 			}
 			break;
 		default:
@@ -88,7 +96,9 @@ int menu_tick(int state) {
 	
 	switch(state) {
 		case menu:
-			LCD_DisplayString(1, "Press button to begin!");
+			LCD_DisplayString(1, "Press button to begin! HiScore: ");
+			LCD_Cursor(32);
+			LCD_WriteData(eeprom_read_byte(0) + '0');
 			break;
 		case press:
 			for (uc i = 0; i < 16; i++) {
@@ -97,8 +107,15 @@ int menu_tick(int state) {
 			}
 			row2_pos = 0;
 			row1_pos = 0;
+			score = 0;
+			ammo = 4;
 			break;
 		case play:
+			break;
+		case endgame:
+			LCD_DisplayString(1, "Your score is:");
+			LCD_Cursor(15);
+			LCD_WriteData(score + '0');
 			break;
 	}
 	
@@ -235,13 +252,20 @@ int display2_tick(int state) {
 	return state;
 }
 
-uc bang;
+uc bang, loadtime;
 
 enum shoot_states { b_wait, shoot} shoot_state = -1;
-	
+
+void saveScore() {
+	eeprom_write_byte(0, score);
+}
+
+
+
 int shoot_tick(int state) {
 	switch(state) {
 		case b_wait:
+			loadtime = 0;
 			if (start && bang) {
 				state = shoot;
 			}
@@ -261,12 +285,55 @@ int shoot_tick(int state) {
 			LCD_Cursor(cursor + (row * 16));
 			LCD_WriteData(2);
 			if (row) {
+				if (row2[(row2_pos + cursor - 2) % 16] == 1) {
+					score += 2;
+				}
 				row2[(row2_pos + cursor - 2) % 16] = ' ';
 			} else {
+				if (row2[(row2_pos + cursor - 2) % 16] == 1) {
+					score += 1;
+				}
 				row1[(row1_pos + cursor - 2) % 16] = ' ';
 			}
+			ammo--;
+			break;
 	}
 	
+	return state;
+}
+
+enum ammo_states { count } ammo_state = -1;
+	
+int ammo_tick(int state) {
+	switch(state) {
+		case count:
+			break;
+		default: 
+			state = count;
+			break;
+	}
+	
+	switch(state) {
+		case count:
+			switch(ammo) {
+				case 0:
+					PORTB = 0x00;
+					break;
+				case 1:
+					PORTB = 0x80;
+					break;
+				case 2:
+					PORTB = 0x40;
+					break;
+				case 3:
+					PORTB = 0x20;
+					break;
+				case 4:
+					PORTB = 0x10;
+					break;
+			}
+			break;
+	}
 	return state;
 }
 
@@ -294,10 +361,10 @@ int main(void)
 	cursor = 1;
 	row = 0;
 	
-	static task task1, task2, task3, task4, task5;
+	static task task1, task2, task3, task4, task5, task6;
 	
 	task1.state = movement_state;
-	task1.period = 150;
+	task1.period = 200;
 	task1.elapsedTime = 0;
 	task1.TickFct = &movement_tick;
 	
@@ -321,7 +388,11 @@ int main(void)
 	task5.elapsedTime = 0;
 	task5.TickFct = &shoot_tick;
 	
-	task *tasks[] = {&task4, &task2, &task3, &task1, &task5};
+	task6.state = ammo_state;
+	task6.period = 100;
+	task6.elapsedTime = 0;
+	task6.TickFct = &ammo_state;
+	task *tasks[] = {&task4, &task2, &task3, &task1, &task5, &task6};
 	
 	TimerSet(period);
 	TimerOn();
