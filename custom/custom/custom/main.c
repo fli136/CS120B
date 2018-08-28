@@ -45,13 +45,13 @@ void wait(int rounds) {
 	}
 }
 
-uc rabbit[16] = {' ', ' ', 0, ' ', ' ', 0, ' ', ' ', 0,
-' ', ' ', 0, ' ', ' ', 0, ' '};
+uc rabbit[16] = {' ', ' ', ' ', 0, ' ', ' ', ' ', 0,
+' ', ' ', ' ', 0, ' ', ' ', ' ', 0};
 
 uc row1_pos, row2_pos, score, ammo;
 
-uc fox[16] = {' ', ' ', 1, ' ', ' ', 1, ' ', ' ', 1,
-' ', ' ', 1, ' ', ' ', 1, ' '};
+uc fox[16] = {' ', ' ', ' ', 1, ' ', ' ', ' ', 1,
+' ', ' ', ' ', 1, ' ', ' ', ' ', 1};
 
 uc row1[16], row2[16];
 
@@ -113,9 +113,12 @@ int menu_tick(int state) {
 		case play:
 			break;
 		case endgame:
-			LCD_DisplayString(1, "Your score is:");
-			LCD_Cursor(15);
+			LCD_DisplayString(1, "Game Over! Your Score is: ");
+			LCD_Cursor(27);
 			LCD_WriteData(score + '0');
+			if (score > eeprom_read_byte(0)) {
+				eeprom_write_byte(0, score);
+			}
 			break;
 	}
 	
@@ -157,19 +160,19 @@ int movement_tick(int state) {
 			wait(200);
 			ud = ADC;
 			if (ud < (initial_ud - 150)) {
-				output += 0x01;
+				//output += 0x01;
 				cursor = (cursor > 15) ? 16 : cursor + 1;
 			}
 			if (ud > (initial_ud + 150)) {
-				output += 0x02;
+				//output += 0x02;
 				cursor = (cursor < 2) ? 1 : cursor - 1;
 			}
 			if (lr < (initial_lr - 150)) {
-				output += 0x04;
+				//output += 0x04;
 				row = 1;
 			}
 			if (lr > (initial_lr + 150)) {
-				output += 0x08;
+				//output += 0x08;
 				row = 0;
 			}
 			LCD_WriteData(' ');
@@ -290,7 +293,7 @@ int shoot_tick(int state) {
 				}
 				row2[(row2_pos + cursor - 2) % 16] = ' ';
 			} else {
-				if (row2[(row2_pos + cursor - 2) % 16] == 1) {
+				if (row1[(row1_pos + cursor - 2) % 16] == 0) {
 					score += 1;
 				}
 				row1[(row1_pos + cursor - 2) % 16] = ' ';
@@ -323,13 +326,13 @@ int ammo_tick(int state) {
 					PORTB = 0x80;
 					break;
 				case 2:
-					PORTB = 0x40;
+					PORTB = 0xC0;
 					break;
 				case 3:
-					PORTB = 0x20;
+					PORTB = 0xE0;
 					break;
 				case 4:
-					PORTB = 0x10;
+					PORTB = 0xF0;
 					break;
 			}
 			break;
@@ -364,17 +367,17 @@ int main(void)
 	static task task1, task2, task3, task4, task5, task6;
 	
 	task1.state = movement_state;
-	task1.period = 200;
+	task1.period = 300;
 	task1.elapsedTime = 0;
 	task1.TickFct = &movement_tick;
 	
 	task2.state = display1_state;
-	task2.period = 600;
+	task2.period = 900;
 	task2.elapsedTime = 0;
 	task2.TickFct = &display1_tick;
 	
 	task3.state = display2_state;
-	task3.period = 300;
+	task3.period = 600;
 	task3.elapsedTime = 0;
 	task3.TickFct = &display2_tick;
 	
@@ -391,7 +394,8 @@ int main(void)
 	task6.state = ammo_state;
 	task6.period = 100;
 	task6.elapsedTime = 0;
-	task6.TickFct = &ammo_state;
+	task6.TickFct = &ammo_tick;
+	
 	task *tasks[] = {&task4, &task2, &task3, &task1, &task5, &task6};
 	
 	TimerSet(period);
