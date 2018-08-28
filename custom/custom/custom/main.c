@@ -16,7 +16,7 @@ typedef unsigned char uc;
 typedef unsigned short us;
 
 uc period = 25;
-uc task_num = 4;
+uc task_num = 5;
 
 typedef struct _task {
 	/*Tasks should have members that include: state, period,
@@ -227,6 +227,41 @@ int display2_tick(int state) {
 	return state;
 }
 
+uc bang;
+
+enum shoot_states { b_wait, shoot} shoot_state = -1;
+	
+int shoot_tick(int state) {
+	switch(state) {
+		case b_wait:
+			if (start && bang) {
+				state = shoot;
+			}
+			break;
+		case shoot:
+			state = b_wait;
+			break;
+		default:
+			state = b_wait;
+			break;
+	}
+	
+	switch(state) {
+		case b_wait:
+			break;
+		case shoot:
+			LCD_Cursor(cursor + (row * 16));
+			LCD_WriteData(2);
+			if (row) {
+				row2[(row2_pos + cursor - 2) % 16] = ' ';
+			} else {
+				row1[(row1_pos + cursor - 2) % 16] = ' ';
+			}
+	}
+	
+	return state;
+}
+
 int main(void)
 {
 	DDRA = 0x00; PORTA = 0xFF;
@@ -243,6 +278,7 @@ int main(void)
 	
 	LCD_init();
 	LCD_Rabbit();
+	LCD_Bang();
 	LCD_Fox();
 	
 	//LCD_DisplayString(1, "Congratuations");
@@ -250,7 +286,7 @@ int main(void)
 	cursor = 1;
 	row = 0;
 	
-	static task task1, task2, task3, task4;
+	static task task1, task2, task3, task4, task5;
 	
 	task1.state = movement_state;
 	task1.period = 150;
@@ -272,7 +308,12 @@ int main(void)
 	task4.elapsedTime = 0;
 	task4.TickFct = &menu_tick;
 	
-	task *tasks[] = {&task4, &task2, &task3, &task1};
+	task5.state = shoot_state;
+	task5.period = 100;
+	task5.elapsedTime = 0;
+	task5.TickFct = &shoot_tick;
+	
+	task *tasks[] = {&task4, &task2, &task3, &task1, &task5};
 	
 	TimerSet(period);
 	TimerOn();
@@ -281,6 +322,7 @@ int main(void)
     while (1) 
     {
 		start_button = (~PINA & 0x04) >> 2;
+		bang = (~PINA & 0x08) >> 3;
 		for (us i = 0; i < task_num; i++ ) {
 			// Task is ready to tick
 			if ( tasks[i]->elapsedTime == tasks[i]->period ) {

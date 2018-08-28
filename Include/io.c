@@ -47,6 +47,19 @@ void LCD_Fox(void) {
 	LCD_WriteData(0x04);
 }
 
+void LCD_Bang(void) {
+	LCD_WriteCommand(0x50);
+	LCD_WriteData(0x15);
+	LCD_WriteData(0x0A);
+	LCD_WriteData(0x10);
+	LCD_WriteData(0x09);
+	LCD_WriteData(0x12);
+	LCD_WriteData(0x01);
+	LCD_WriteData(0x0A);
+	LCD_WriteData(0x15);
+	
+}
+
 void LCD_init(void) {
 
     //wait for 100 ms.
