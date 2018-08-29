@@ -159,6 +159,17 @@ int movement_tick(int state) {
 			ADMUX = (ADMUX & 0xF8) | 0x01;
 			wait(200);
 			ud = ADC;
+			if (row) {
+				if (row2[(row2_pos + cursor - 2) % 16] != 1) {
+					LCD_Cursor(cursor + (row * 16));
+					LCD_WriteData(' ');
+				}
+			} else {
+				if (row1[(row1_pos + cursor - 2) % 16] != 0) {
+					LCD_Cursor(cursor + (row * 16));
+					LCD_WriteData(' ');
+				}
+			}
 			if (ud < (initial_ud - 150)) {
 				//output += 0x01;
 				cursor = (cursor > 15) ? 16 : cursor + 1;
@@ -175,7 +186,6 @@ int movement_tick(int state) {
 				//output += 0x08;
 				row = 0;
 			}
-			LCD_WriteData(' ');
 			LCD_Cursor(cursor + (row * 16));
 			LCD_WriteData('+');
 			PORTB = output;
