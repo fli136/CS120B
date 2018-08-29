@@ -269,12 +269,6 @@ uc bang, loadtime;
 
 enum shoot_states { b_wait, shoot} shoot_state = -1;
 
-void saveScore() {
-	eeprom_write_byte(0, score);
-}
-
-
-
 int shoot_tick(int state) {
 	switch(state) {
 		case b_wait:
@@ -410,6 +404,7 @@ int main(void)
 	
 	TimerSet(period);
 	TimerOn();
+
 	
     /* Replace with your application code */
     while (1) 
