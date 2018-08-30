@@ -48,7 +48,7 @@ void wait(int rounds) {
 uc rabbit[16] = {' ', ' ', ' ', 0, ' ', ' ', ' ', 0,
 ' ', ' ', ' ', 0, ' ', ' ', ' ', 0};
 
-uc row1_pos, row2_pos, score, ammo;
+uc row1_pos, row2_pos, score, ammo, cursor, row;;
 
 uc fox[16] = {' ', ' ', ' ', 1, ' ', ' ', ' ', 1,
 ' ', ' ', ' ', 1, ' ', ' ', ' ', 1};
@@ -109,6 +109,8 @@ int menu_tick(int state) {
 			row1_pos = 0;
 			score = 0;
 			ammo = 4;
+			cursor = 1;
+			row = 0;
 			break;
 		case play:
 			break;
@@ -128,7 +130,7 @@ int menu_tick(int state) {
 enum movement_states { m_wait, move} movement_state = -1;
 
 us initial_lr, initial_ud, lr, ud;
-uc cursor, row;
+
 uc output;
 
 int movement_tick(int state) {
@@ -404,7 +406,7 @@ int main(void)
 	
 	TimerSet(period);
 	TimerOn();
-
+	
 	
     /* Replace with your application code */
     while (1) 
